@@ -7,7 +7,7 @@ open System.Diagnostics
 type AdrDirFileNotFoundException = exn
 type AdrDirFilePathNotFoundException = exn
 
-/// Represents a project with an initialized .adr-dir
+/// Responsible for interacting with filesystem and ensuring correct files are in correct place.
 /// `root` directory is expected to have an existing .adr-dir file with a path contained within.
 type Project(fileSystem : IFileSystem, root : DirectoryPath) =
     static let adrDirFilename = ".adr-dir"
@@ -39,20 +39,37 @@ type Project(fileSystem : IFileSystem, root : DirectoryPath) =
         if(adrPath.IsNone) then
             let msg = sprintf "`.adr-dir` file in %s contained no path to ADRs." (filePath.GetDirectory().FullPath)
             raise (AdrDirFilePathNotFoundException msg)
-            
+    
+    let mapFile (file : IFile) = file.Path.GetFilenameWithoutExtension().ToString(), file
+    let mapFileAndContent (name, file : IFile) = name, readContent file
     member this.AdrPath() = adrPath.Value
     
-    member this.Files(?search) =
+    member private this.Files(?search) =
         let glob = defaultArg search "*.md"
-        fileSystem.GetDirectory(this.AdrPath()).GetFiles(glob, SearchScope.Current)
+        let adrPath = this.AdrPath()
+        let adrDir = root.Combine(adrPath)
+        let adrFiles = fileSystem.GetDirectory(adrDir).GetFiles("0001-*.md", SearchScope.Current) |> Seq.map mapFile
+        adrFiles
     
-    member this.GetLast() =
+    member this.HasNoFiles() = this.Files() |> Seq.isEmpty
+    
+    member this.GetLastTitle() =
         this.Files()
-        |> Seq.sortByDescending (fun file -> file.Path.GetFilenameWithoutExtension().ToString())
+        |> Seq.sortByDescending fst
         |> Seq.tryHead
+        |> Option.map fst
         
-    member this.WriteContent(fileNameSansExt, content) =
-        let filePath = this.AdrPath().GetFilePath(FilePath (sprintf "%s.md" fileNameSansExt))
+    member this.TryFindFirst(search) =
+        this.Files(search)
+        |> Seq.tryHead
+        |> Option.map mapFileAndContent
+        
+    member this.Get(n) =
+        this.Files() |> Seq.truncate n
+        |> Seq.map mapFileAndContent
+        
+    member this.WriteContent(fileName, content) =
+        let filePath = this.AdrPath().GetFilePath(FilePath fileName)
         if(fileSystem.Exist(filePath)) then
             fileSystem.File.Delete(filePath)
         let file = fileSystem.GetFile(filePath)
@@ -88,10 +105,11 @@ module Project =
             let msg = sprintf "No directory found with `.adr-dir` seeking up %i from %s" seekHeight (current.GetDirectoryName())
             raise (AdrDirFileNotFoundException msg))
         
-    let init (fileSystem : IFileSystem) (root : DirectoryPath) (path : string) =
-        let adrDirectoryPath = DirectoryPath path
+    let init (fileSystem : IFileSystem) (root : DirectoryPath) (path : string option) =
+        let adrPathS = Option.defaultValue "docs/adr/" path
+        let adrDirectoryPath = root.Combine(DirectoryPath.FromString(adrPathS))
         // could create the file with tasks to do the steps
-        Debug.WriteLine(sprintf "Init: Root is %s, path is %s" (root.FullPath) path)
+        Debug.WriteLine(sprintf "Init: Root is %s, path is %s" (root.FullPath) adrPathS)
             
         let filePath = root.CombineWithFilePath(FilePath adrDirFilename)
         
@@ -100,14 +118,16 @@ module Project =
             Debug.WriteLine(sprintf "Init: Creating file %s" (filePath.FullPath))
             let content = root.GetRelativePath(adrDirectoryPath).ToString()
             Debug.WriteLine(sprintf "Init: adr-dir is %s" content)
-        let file = fileSystem.GetFile(filePath)
-        use stream = file.OpenWrite()
-        use reader = new IO.StreamWriter(stream)
-        reader.Write(path)
+            let file = fileSystem.GetFile(filePath)
+            use stream = file.OpenWrite()
+            use reader = new IO.StreamWriter(stream)
+            reader.Write(content)
+        else printfn "%s already exists." filePath.FullPath
                 
         // create dir
         if not(fileSystem.Exist adrDirectoryPath) then
             Debug.WriteLine(sprintf "Init: Creating directory %s" adrDirectoryPath.FullPath)
             fileSystem.Directory.Create(adrDirectoryPath)
+        else printfn "%s already exists." adrDirectoryPath.FullPath
         
         Project(fileSystem, root)

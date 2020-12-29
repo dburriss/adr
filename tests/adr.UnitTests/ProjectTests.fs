@@ -45,7 +45,7 @@ let ``create Project when adr-dir is empty throws``() =
 [<Fact>]
 let ``Project returns correct adr path``() =
     let adrFile = "/Working/.adr-dir"
-    let adrPath = "/Working/path/to/adr/"
+    let adrPath = "path/to/adr"
     let currentPath = "/Working"
     let fileSystem = FileSystemBuilder()
                          .WithDir(currentPath)
@@ -53,4 +53,15 @@ let ``Project returns correct adr path``() =
     let root = DirectoryPath currentPath
     let project = Project(fileSystem, root)
     test <@ project.AdrPath().FullPath = (DirectoryPath adrPath).FullPath @>
+    
+[<Fact>]
+let ``Project init with no path uses default``() =
+    let currentPath = "/Working"
+    let adrPath = "docs/adr"
+    let fileSystem = FileSystemBuilder().WithDir("/Working").Build()
+    let root = DirectoryPath currentPath
+    do Project.init fileSystem root None |> ignore
+    let project = Project(fileSystem, root)
+    
+    test <@ project.AdrPath().FullPath = adrPath @>
     

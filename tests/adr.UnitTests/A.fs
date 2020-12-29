@@ -5,6 +5,8 @@ open System.Collections.Generic
 open Spectre.IO
 open Spectre.IO.Testing
 
+
+
 type FileSystemBuilder() =
     let env = FakeEnvironment.CreateUnixEnvironment()
     let fs = FakeFileSystem(env)
@@ -25,5 +27,36 @@ type FileSystemBuilder() =
     member this.Build() = fs
     
 module A =
+    module Adr =
+        [<Literal>]
+        let defaultMarkdown = """# Record architecture decisions
+
+## Status
+
+Proposed
+
+## Context
+
+What is the issue that we're seeing that is motivating this decision or change?
+
+## Decision
+
+What is the change that we're proposing and/or doing?
+
+## Consequences
+
+What becomes easier or more difficult to do because of this change?
+
+"""
     module FileSystem =
         let rootDir = DirectoryPath "/Working"
+        let initializedProjectFilesystem =
+            FileSystemBuilder()
+                .WithDir("/Working/docs/adr/")
+                .WithFile("/Working/.adr-dir", "docs/adr")
+                .WithFile("/Working/docs/adr/0001-record-architecture-decisions.md", Adr.defaultMarkdown)
+                .Build()
+                
+    module Project =
+        let initializedProject =
+            Project(FileSystem.initializedProjectFilesystem, FileSystem.rootDir)

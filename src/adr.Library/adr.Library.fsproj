@@ -6,8 +6,10 @@
     <RootNamespace>adr.Library</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="String.fs" />
     <Compile Include="Project.fs" />
-    <Compile Include="Library.fs" />
+    <Compile Include="Adr.fs" />
+    <Compile Include="AdrRepository.fs" />
     <Content Include="paket.references" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
