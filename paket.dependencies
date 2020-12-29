@@ -11,6 +11,13 @@ nuget Argu
 nuget FuncyDown
 nuget Spectre.IO
 nuget Markdig
+nuget Microsoft.NET.Test.Sdk
+nuget xunit
+nuget xunit.runner.visualstudio
+nuget coverlet.collector
+nuget FsCheck.Xunit
+nuget Unquote
+nuget Spectre.IO.Testing
 
 group Docs
   source https://api.nuget.org/v3/index.json

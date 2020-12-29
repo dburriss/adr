@@ -6,6 +6,7 @@
     <RootNamespace>adr.Library</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Project.fs" />
     <Compile Include="Library.fs" />
     <Content Include="paket.references" />
   </ItemGroup>

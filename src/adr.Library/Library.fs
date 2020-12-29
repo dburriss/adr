@@ -175,5 +175,5 @@ module Adr =
             FileNameSansExt = codeAndTitle
         }
     
-    let supersede (file : IFile option) (by : Adr) = ()
+    let supersede (file : FilePath) (by : Adr) = ()
         

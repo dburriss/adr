@@ -95,8 +95,8 @@ let main argv =
             let repo = AdrRepository(fileSystem, currentDir, initSettings.AdrPath)
             repo.Init()
             if(repo.Files() |> Seq.isEmpty) then
-                let (codeAndTitle, content) = Adr.newAdr repo "record-architecture-decisions"
-                let file = repo.WriteAdr(codeAndTitle, content)
+                let adr = Adr.newAdr (repo.GetLast()) "record-architecture-decisions"
+                let file = repo.WriteAdr(adr.FileNameSansExt, adr.Content)
                 printfn "created %s" (file.ToString())
                 
         | NewCommand newSettings ->
@@ -110,7 +110,6 @@ let main argv =
             let adr = Adr.newAdr (repo.GetLast()) newSettings.Title
             let file = repo.WriteAdr(adr.FileNameSansExt, adr.Content)
             // supersede
-            newSettings.Supersedes |> Option.iter Adr.supersede
             printfn "created %s" (file.ToString())
             
         | _ -> parser.PrintUsage() |> Console.WriteLine
