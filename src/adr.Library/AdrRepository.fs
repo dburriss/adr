@@ -23,20 +23,15 @@ open System
 /// Responsible for mapping between ADR and the files
 type AdrRepository(project : Project) =
     static let seekHeight = 10
-    let formatSlug = String.lower >> String.replace " " "-"
-    let adrNumberAsString i = sprintf "%04i" i
-    let mapToFilename fileNameSansExt = (sprintf "%s.md" fileNameSansExt)
-    let mapToFileNameSansExt adr = sprintf "%s-%s" (adrNumberAsString adr.Number) (formatSlug adr.Title)
-    let adrToFilename = mapToFileNameSansExt >> mapToFilename
-
+    
     member this.TopNumber() =
         project.GetLastTitle()
         |> Option.bind Adr.extractNrFromFilename
         |> Option.defaultValue 0
     
     member this.GetByNumber(nr : int) =
-        let adrNumberString = (adrNumberAsString nr)
-        let search = sprintf "%s-*.md " adrNumberString
+        let adrNumberString = (Adr.adrNumberAsString nr)
+        let search = sprintf "%s-*.md" adrNumberString
         match project.TryFindFirst(search) with
         | None -> failwithf "ADR %s not found." adrNumberString
         | Some c -> Adr.fromContent c
@@ -48,7 +43,7 @@ type AdrRepository(project : Project) =
         |> Seq.map Adr.fromContent
         
     member this.WriteAdr(adr : Adr) =
-        let fileName = adrToFilename adr
+        let fileName = Adr.adrToFilename adr
         do project.WriteContent(fileName, adr.Content) |> ignore
         adr
 

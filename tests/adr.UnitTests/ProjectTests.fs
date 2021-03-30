@@ -65,3 +65,21 @@ let ``Project init with no path uses default``() =
     
     test <@ project.AdrPath().FullPath = adrPath @>
     
+[<Fact>]
+let ``Find First for non-existent file glob returns None``() =
+    let project = A.Project.initializedProject
+    
+    test <@ project.TryFindFirst("9999-*.md").IsNone = true @>
+    
+[<Fact>]
+let ``FindFirst Project Files with 1 file returns 1``() =
+    let project = A.Project.initializedProject
+    
+    test <@ project.TryFindFirst("0001-*.md").IsSome = true @>
+    
+[<Fact>]
+let ``Get Project Files with 1 file returns 1``() =
+    let project = A.Project.initializedProject
+    
+    test <@ project.Get(Int32.MaxValue) |> Seq.length = 1 @>
+    

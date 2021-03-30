@@ -48,7 +48,7 @@ type Project(fileSystem : IFileSystem, root : DirectoryPath) =
         let glob = defaultArg search "*.md"
         let adrPath = this.AdrPath()
         let adrDir = root.Combine(adrPath)
-        let adrFiles = fileSystem.GetDirectory(adrDir).GetFiles("0001-*.md", SearchScope.Current) |> Seq.map mapFile
+        let adrFiles = fileSystem.GetDirectory(adrDir).GetFiles(glob, SearchScope.Current) |> Seq.map mapFile
         adrFiles
     
     member this.HasNoFiles() = this.Files() |> Seq.isEmpty
@@ -65,8 +65,10 @@ type Project(fileSystem : IFileSystem, root : DirectoryPath) =
         |> Option.map mapFileAndContent
         
     member this.Get(n) =
-        this.Files() |> Seq.truncate n
+        this.Files()
+        |> Seq.truncate n
         |> Seq.map mapFileAndContent
+        |> Seq.sortBy fst
         
     member this.WriteContent(fileName, content) =
         let filePath = this.AdrPath().GetFilePath(FilePath fileName)

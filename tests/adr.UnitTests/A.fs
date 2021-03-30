@@ -1,11 +1,7 @@
 namespace adr
 
-open System
-open System.Collections.Generic
 open Spectre.IO
 open Spectre.IO.Testing
-
-
 
 type FileSystemBuilder() =
     let env = FakeEnvironment.CreateUnixEnvironment()
@@ -29,7 +25,9 @@ type FileSystemBuilder() =
 module A =
     module Adr =
         [<Literal>]
-        let defaultMarkdown = """# Record architecture decisions
+        let defaultMarkdown = """# 1. Record architecture decisions
+
+Date: 2020-12-29
 
 ## Status
 
@@ -48,6 +46,8 @@ What is the change that we're proposing and/or doing?
 What becomes easier or more difficult to do because of this change?
 
 """
+
+        let content = ("0001-record-architecture-decisions", defaultMarkdown)
     module FileSystem =
         let rootDir = DirectoryPath "/Working"
         let initializedProjectFilesystem =

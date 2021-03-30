@@ -7,6 +7,7 @@
     <Compile Include="A.fs" />
     <Compile Include="ProjectTests.fs" />
     <Content Include="paket.references" />
+    <Compile Include="AdrTests.fs" />
     <Compile Include="AdrRepositoryTests.fs" />
   </ItemGroup>
   <ItemGroup>

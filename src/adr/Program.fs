@@ -114,6 +114,7 @@ let main argv =
     //------------------------------------------------------------------------------------------------------------------
     try
         let result = parser.ParseCommandLine(inputs = argv, raiseOnUsage = false)
+        let seekHeight = 10
         match result with
         | Help usage -> Console.WriteLine(usage)
         | InitCommand initSettings ->
@@ -121,25 +122,25 @@ let main argv =
             let proj = Project.init fileSystem currentDir initSettings.AdrPath
             if(proj.HasNoFiles()) then
                 let repo = AdrRepository(proj)
-                let adr = Adr.newAdr (repo.TopNumber()) " Record architecture decisions"
+                let adr = Adr.newAdr (repo.TopNumber()) " Record architecture decisions" DateTime.Now
                 let file = repo.WriteAdr(adr)
                 printfn "created %i - %s" adr.Number adr.Title
             else printfn "Already initialized. Doing nothing."
                 
         | NewCommand newSettings ->
             printfn "New ADR..."
-            let proj = Project.create fileSystem currentDir 10
+            let proj = Project.create fileSystem currentDir seekHeight
             let repo = AdrRepository(proj)
             // new adr
-            let adr = Adr.newAdr (repo.TopNumber()) newSettings.Title
+            let adr = Adr.newAdr (repo.TopNumber()) newSettings.Title DateTime.Now
             // supersede
             // change old adr - update status and add link to new adr
             
-            printfn "created %i - %s" adr.Number adr.Title
+            printfn "%s" adr.Title
                    
         | ListCommand listSettings ->
             printfn "List ADRs..."
-            let proj = Project.create fileSystem currentDir 10
+            let proj = Project.create fileSystem currentDir seekHeight
             let repo = AdrRepository(proj)
             // list adrs
             let adrs = repo.GetAdrs(listSettings.Number)
